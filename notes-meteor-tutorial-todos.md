@@ -1228,4 +1228,135 @@ index 7d837a9..cb9b6f1 100644
          <input type="checkbox" checked="{{hideCompleted}}" />
 ```
 
+Adding user accounts
+--------------------
+
+```sh
+$ meteor add accounts-ui accounts-password
+```
+
+```sh
+Shoichi at sho-mbp in ~/simple-todos on master
+$ meteor add accounts-ui accounts-password
+
+Changes to your project's package version selections:
+
+accounts-base          added, version 1.2.1
+accounts-password      added, version 1.1.3
+accounts-ui            added, version 1.1.6
+accounts-ui-unstyled   added, version 1.1.8
+ddp-rate-limiter       added, version 1.0.0
+email                  added, version 1.0.7
+less                   added, version 2.5.0_3
+localstorage           added, version 1.0.5
+npm-bcrypt             added, version 0.7.8_2
+rate-limit             added, version 1.0.0
+service-configuration  added, version 1.0.5
+sha                    added, version 1.0.4
+srp                    added, version 1.0.4
+
+
+accounts-ui: Simple templates to add login widgets to an app
+accounts-password: Password support for accounts
+```
+
+### Include loginButtons
+
+```sh
+diff --git a/simple-todos.html b/simple-todos.html
+index cb9b6f1..55f385c 100644
+--- a/simple-todos.html
++++ b/simple-todos.html
+@@ -12,6 +12,8 @@
+         Hide Completed Tasks
+       </label>
+ 
++      {{> loginButtons}}
++
+       <form class="new-task">
+         <input type="text" name="text" placeholder="Type to add new tasks" />
+       </form>
+```
+
+### Configure accounts-ui
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index a9c5406..50ee1c1 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+@@ -53,6 +53,10 @@ if (Meteor.isClient) {
+       Tasks.remove(this._id);
+     }
+   });
++
++  Acconts.ui.config({
++    passwordSignupFields: "USERNAME_ONLY"
++  });
+ }
+```
+
+### Update insert to include user data
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index a9c5406..21da329 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+@@ -31,7 +31,9 @@ if (Meteor.isClient) {
+       // Insert a task into the collection
+       Tasks.insert({
+         text: text,
+-        createdAt: new Date() // current time
++        createdAt: new Date(),            // current time
++        owner: Meteor.userId(),           // _id of logged in user
++        username: Meteor.user().username  // username of logged in user
+       });
+ 
+       // Clear form
+```
+
+### Only show add task form if logged in
+
+```sh
+diff --git a/simple-todos.html b/simple-todos.html
+index cb9b6f1..9e4b61a 100644
+--- a/simple-todos.html
++++ b/simple-todos.html
+@@ -12,9 +12,13 @@
+         Hide Completed Tasks
+       </label>
+ 
+-      <form class="new-task">
+-        <input type="text" name="text" placeholder="Type to add new tasks" />
+-      </form>
++      {{> loginButtons}}
++
++      {{#if currentUser}}
++        <form class="new-task">
++          <input type="text" name="text" placeholder="Type to add new tasks" />
++        </form>
++      {{/if}}
+     </header>
+ 
+     <ul>
+```
+
+### Display username next to task
+
+```sh
+diff --git a/simple-todos.html b/simple-todos.html
+index cb9b6f1..55c1dc9 100644
+--- a/simple-todos.html
++++ b/simple-todos.html
+[...]
+@@ -31,6 +35,6 @@
+ 
+     <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+ 
+-    <span class="text">{{text}}</span>
++    <span class="text"><strong>{{username}}</strong> - {{text}}</span>
+   </li>
+ </template>
+```
 

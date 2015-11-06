@@ -817,3 +817,93 @@ index 5941766..19f0109 100644
  /*
 ```
 
+### Run `git commit`
+
+```sh
+Shoichi at sho-mbp in ~/simple-todos on master [!?]
+$ git status
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   simple-todos.html
+	modified:   simple-todos.js
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	notes-meteor-tutorial-todos.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Shoichi at sho-mbp in ~/simple-todos on master [!?]
+$ git add notes-meteor-tutorial-todos.md
+
+Shoichi at sho-mbp in ~/simple-todos on master [+!]
+$ git commit -m "Add my personal notes for simple-todos app tutorial"
+[master 987bf11] Add my personal notes for simple-todos app tutorial
+ 1 file changed, 819 insertions(+)
+ create mode 100644 notes-meteor-tutorial-todos.md
+
+Shoichi at sho-mbp in ~/simple-todos on master [!]
+$ git commit -am "Add delete buttons and its event hundlers"
+[master 1e18505] Add delete buttons and its event hundlers
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+Shoichi at sho-mbp in ~/simple-todos on master
+$ git log --oneline --graph --decorate --all
+* 1e18505 (HEAD -> master) Add delete buttons and its event hundlers
+* 987bf11 Add my personal notes for simple-todos app tutorial
+* 0d8ac41 Show newest tasks at the top
+* 99b09d4 Add event hundler for form submit
+* db7e1f1 Add input form for new tasks
+* f8adefd Define Tasks collection and load tasks from it
+* 51efff2 Add the given code to html, css and js files
+* 8b3b355 Initial commit
+```
+
+Deploying your app
+------------------
+
+```sh
+Shoichi at sho-mbp in ~/simple-todos on master [!]
+$ meteor deploy sho-simple-todos.meteor.com
+To instantly deploy your app on a free testing server, just enter your email address!
+Email: example@domain.com
+
+Deploying to sho-simple-todos.meteor.com.
+                                               Minifying app code                         Now serving at http://sho-simple-todos.meteor.com
+
+You should set a password on your Meteor developer account. It takes about a minute at:
+https://www.meteor.com/setPassword?F85mevBaMZ
+```
+
+Running your app on Android or iOS
+----------------------------------
+
+### Running on an iOS simulator (Mac Only)
+
+```sh
+Shoichi at sho-mbp in ~/simple-todos on master [!]
+$ meteor install-sdk ios
+Please follow the instructions here:
+https://github.com/meteor/meteor/wiki/Mobile-Development-Install:-iOS-on-Mac
+
+Shoichi at sho-mbp in ~/simple-todos on master [!]
+$ meteor add-platform ios
+ios: added platform
+
+Shoichi at sho-mbp in ~/simple-todos on master [!]
+$ meteor run ios
+[[[[[ ~/simple-todos ]]]]]
+
+=> Started proxy.
+=> Started MongoDB.
+=> Started your app.
+
+=> App running at: http://localhost:3000/
+=> Started app on iOS Simulator.
+```
+
+

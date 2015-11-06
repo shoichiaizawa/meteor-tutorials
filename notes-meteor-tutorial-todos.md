@@ -1464,3 +1464,220 @@ index 21da329..61f86de 100644
 [...]
 ```
 
+Filtering data with publish and subscribe
+-----------------------------------------
+
+### Remove default `autopublish` package
+
+```sh
+$ meteor remove autopublish
+```
+
+```sh
+Shoichi at sho-mbp in ~/simple-todos on master [!]
+$ meteor remove autopublish
+
+Changes to your project's package version selections:
+
+autopublish  removed from your project
+
+autopublish: removed dependency
+```
+
+### Add publish and subscribe
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 61f86de..5f72159 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+@@ -1,7 +1,16 @@
+ Tasks = new Mongo.Collection("tasks");
+ 
++if (Meteor.isServer) {
++  // This code only runs on the server
++  Meteor.publish("tasks", function () {
++    return Tasks.find();
++  });
++}
++
+ if (Meteor.isClient) {
+   // This code only runs on the client
++  Meteor.subscribe("tasks");
++
+   Template.body.helpers({
+     tasks: function() {
+       if (Session.get("hideCompleted")) {
+```
+
+### Add private button
+
+```sh
+diff --git a/simple-todos.html b/simple-todos.html
+index 55c1dc9..94372b0 100644
+--- a/simple-todos.html
++++ b/simple-todos.html
+@@ -35,6 +35,16 @@
+ 
+     <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+ 
++    {{#if isOwner}}
++      <button class="toggle-private">
++        {{#if private}}
++          Private
++        {{else}}
++          Public
++        {{/if}}
++      </button>
++    {{/if}}
++
+     <span class="text"><strong>{{username}}</strong> - {{text}}</span>
+   </li>
+ </template>
+```
+
+### Add private class to private tasks
+
+```sh
+diff --git a/simple-todos.html b/simple-todos.html
+index 55c1dc9..5e2af69 100644
+--- a/simple-todos.html
++++ b/simple-todos.html
+@@ -30,11 +30,21 @@
+ </body>
+ 
+ <template name="task">
+-  <li class="{{#if checked}}checked{{/if}}">
++  <li class="{{#if checked}}checked{{/if}} {{#if private}}private{{/if}}">
+     <button class="delete">&times;</button> 
+[...]
+```
+
+### Define helper to check ownership
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 61f86de..c361e80 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+[...]
+@@ -39,6 +48,12 @@ if (Meteor.isClient) {
+     }
+   });
+ 
++  Template.task.helpers({
++    isOwner: function () {
++      return this.owner === Meteor.userId();
++    }
++  });
++
+   Template.task.events({
+     "click .toggle-checked": function () {
+       // Set the checked property to the opposite of its current value
+```
+
+### Define method to set tasks to private
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 61f86de..d5f1de9 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+@@ -1,7 +1,16 @@
+[...]
+@@ -73,6 +88,16 @@ Meteor.methods({
+   },
+   setChecked: function (taskId, setChecked) {
+     Tasks.update(taskId, { $set: { checked: setChecked} });
++  },
++  setPrivate: function (taskId, setToPrivate) {
++    var task = Tasks.findOne(taskId);
++
++    // Make sure only the task owner can make a task private
++    if (task.owner !== Meteor.userId()) {
++      throw new Meteor.Error("not-authorized");
++    }
++
++    Tasks.update(taskId, { $set: { private: setToPrivate } });
+   }
+ });
+```
+
+### Add event handler to call the setPrivate method
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 61f86de..fc6afb4 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+[...]
+@@ -46,6 +61,9 @@ if (Meteor.isClient) {
+     },
+     "click .delete": function () {
+       Meteor.call("deleteTask", this._id);
++    },
++    "click .toggle-private": function () {
++      Meteor.call("setPrivate", this._id, ! this.private);
+     }
+   });
+ 
+[...]
+```
+
+### Only publish tasks the user is allowed to see
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 61f86de..c7ddee8 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+@@ -1,7 +1,22 @@
+ Tasks = new Mongo.Collection("tasks");
+ 
++if (Meteor.isServer) {
++  // This code only runs on the server
++  // Only publish tasks that are public or belog to the current user
++  Meteor.publish("tasks", function () {
++    return Tasks.find({
++      $or: [
++        { private: {$ne: true} },
++        { owner: this.userId }
++      ]
++    });
++  });
++}
++
+[...]
+```
+
+### Add some extra security to methods
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 61f86de..c39c10c 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+[...] 
+@@ -69,10 +93,32 @@ Meteor.methods({
+     });
+   },
+   deleteTask: function (taskId) {
++    var task = Tasks.findOne(taskId);
++    if (task.private && task.owner !== Meteor.userId()) {
++      // If the task is private, make sure only the owner can delete it
++      throw new Meteor.Error("not-authorized");
++    }
++
+     Tasks.remove(taskId);
+   },
+   setChecked: function (taskId, setChecked) {
++    var task = Tasks.findOne(taskId);
++    if (task.private && task.owner !== Meteor.userId()) {
++      // If the task is private, make sure only the owner can check it off
++      throw new Meteor.Error("not-authorized");
++    }
++
+     Tasks.update(taskId, { $set: { checked: setChecked} });
+[...]
+```
+

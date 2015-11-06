@@ -690,6 +690,8 @@ Checking off and deleting tasks
 
 ### Add buttons to Task component
 
+##### `simple-todos.html`
+
 ```html
 <head>
   <title>Todo List</title>
@@ -745,6 +747,8 @@ index e31aef1..94341cc 100644
 ```
 
 ### Add event handlers for Task buttons
+
+##### `simple-todos.js`
 
 ```javascript
 Tasks = new Mongo.Collection("tasks");
@@ -906,4 +910,174 @@ $ meteor run ios
 => Started app on iOS Simulator.
 ```
 
+Storing temporary UI state in Session
+-------------------------------------
+
+### Add hide-completed checkbox to HTML
+
+##### `simple-todos.html`
+
+```html
+<head>
+  <title>Todo List</title>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Todo List</h1>
+
+      <label class="hide-completed">
+        <input type="checkbox" checked="{{hideCompleted}}" />
+        Hide Completed Tasks
+      </label>
+
+      <form class="new-task">
+        <input type="text" name="text" placeholder="Type to add new tasks" />
+      </form>
+    </header>
+
+    <ul>
+      {{#each tasks}}
+        {{> task}}
+      {{/each}}
+    </ul>
+  </div>
+</body>
+
+<template name="task">
+  <li class="{{#if checked}}checked{{/if}}">
+    <button class="delete">&times;</button>
+
+    <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+
+    <span class="text">{{text}}</span>
+  </li>
+</template>
+```
+
+
+```sh
+Shoichi at sho-mbp in ~/simple-todos on master [!]
+$ git diff simple-todos.html
+diff --git a/simple-todos.html b/simple-todos.html
+index 94341cc..7d837a9 100644
+--- a/simple-todos.html
++++ b/simple-todos.html
+@@ -7,6 +7,11 @@
+     <header>
+       <h1>Todo List</h1>
+
++      <label class="hide-completed">
++        <input type="checkbox" checked="{{hideCompleted}}" />
++        Hide Completed Tasks
++      </label>
++
+       <form class="new-task">
+         <input type="text" name="text" placeholder="Type to add new tasks" />
+       </form>
+```
+
+### Add event handler for checkbox
+
+##### `simple-todos.js`
+
+```javascript
+Tasks = new Mongo.Collection("tasks");
+
+if (Meteor.isClient) {
+  // This code only runs on the client
+  Template.body.helpers({
+    tasks: function() {
+      if (Session.get("hideCompleted")) {
+        // If hide completed is checked, filter tasks
+        return Tasks.find({checked: {$ne: true}}, {sort: {createdAt: -1}});
+      } else {
+        // Otherwise, return all of the tasks
+        return Tasks.find({}, {sort: {createdAt: -1}});
+      }
+    },
+    hideCompleted: function () {
+      return Session.get("hideCompleted");
+    }
+  });
+
+  Template.body.events({
+    "submit .new-task": function (event) {
+      // Prevent default browser form submit
+      event.preventDefault();
+
+      // Get value from form element
+      var text = event.target.text.value;
+
+      // Insert a task into the collection
+      Tasks.insert({
+        text: text,
+        createdAt: new Date() // current time
+      });
+
+      // Clear form
+      event.target.text.value = "";
+    },
+    "change .hide-completed input": function (event) {
+      Session.set("hideCompleted", event.target.checked);
+    }
+  });
+
+  Template.task.events({
+    "click .toggle-checked": function () {
+      // Set the checked property to the opposite of its current value
+      Tasks.update(this._id, {
+        $set: {checked: ! this.checked}
+      });
+    },
+    "click .delete": function () {
+      Tasks.remove(this._id);
+    }
+  });
+}
+
+/*
+ * if (Meteor.isServer) {
+ *   Meteor.startup(function () {
+ *     // code to run on server at startup
+ *   });
+ * }
+ */
+```
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 19f0109..a6fedee 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+@@ -4,8 +4,16 @@ if (Meteor.isClient) {
+   // This code only runs on the client
+   Template.body.helpers({
+     tasks: function() {
+-      // Show newest tasks at the top
+-      return Tasks.find({}, {sort: {createdAt: -1}});
++      if (Session.get("hideCompleted")) {
++        // If hide completed is checked, filter tasks
++        return Tasks.find({checked: {$ne: true}}, {sort: {createdAt: -1}});
++      } else {
++        // Otherwise, return all of the tasks
++        return Tasks.find({}, {sort: {createdAt: -1}});
++      }
++    },
++    hideCompleted: function () {
++      return Session.get("hideCompleted");
+     }
+   });
+ 
+@@ -25,6 +33,9 @@ if (Meteor.isClient) {
+ 
+       // Clear form
+       event.target.text.value = "";
++    },
++    "change .hide-completed input": function (event) {
++      Session.set("hideCompleted", event.target.checked);
+     }
+   });
+```
 

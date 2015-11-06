@@ -1360,3 +1360,107 @@ index cb9b6f1..55c1dc9 100644
  </template>
 ```
 
+Security with methods
+---------------------
+
+### Removing the `insecure` pacakage
+
+```sh
+$ meteor remove insecure
+```
+
+```sh
+Shoichi at sho-mbp in ~/simple-todos on master
+$ meteor remove insecure
+
+Changes to your project's package version selections:
+
+insecure  removed from your project
+
+insecure: removed dependency
+```
+
+### Define some methods
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 21da329..4994205 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+@@ -61,6 +61,28 @@ if (Meteor.isClient) {
+   });
+ }
+ 
++Meteor.methods({
++  addTask: function (text) {
++    // Make sure the user is logged in before inserting a task
++    if (! Meteor.userId()) {
++      throw new Meteor.Error("not-authorized");
++    }
++
++    Tasks.insert({
++      text: text,
++      createdAt: new Date(),            // current time
++      owner: Meteor.userId(),           // _id of logged in user
++      username: Meteor.user().username  // username of logged in user
++    });
++  },
++  deleteTask: function (taskId) {
++    Tasks.remove(taskId);
++  },
++  setChecked: function (taskId, setChecked) {
++    Tasks.update(taskId, { $set: { checked: setChecked} });
++  }
++});
++
+```
+
+### Replace insert with addTask method
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 21da329..f2271f8 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+@@ -29,12 +29,7 @@ if (Meteor.isClient) {
+       var text = event.target.text.value;
+ 
+       // Insert a task into the collection
+-      Tasks.insert({
+-        text: text,
+-        createdAt: new Date(),            // current time
+-        owner: Meteor.userId(),           // _id of logged in user
+-        username: Meteor.user().username  // username of logged in user
+-      });
++      Meteor.call("addTask", text);
+ 
+       // Clear form
+       event.target.text.value = "";
+[...]
+```
+
+### Replace update and remove with methods
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index 21da329..61f86de 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+[...]
+@@ -47,12 +42,10 @@ if (Meteor.isClient) {
+   Template.task.events({
+     "click .toggle-checked": function () {
+       // Set the checked property to the opposite of its current value
+-      Tasks.update(this._id, {
+-        $set: {checked: ! this.checked}
+-      });
++      Meteor.call("setChecked", this._id, ! this.checked);
+     },
+     "click .delete": function () {
+-      Tasks.remove(this._id);
++      Meteor.call("deleteTask", this._id);
+     }
+   });
+[...]
+```
+

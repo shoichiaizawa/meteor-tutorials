@@ -1081,3 +1081,151 @@ index 19f0109..a6fedee 100644
    });
 ```
 
+### Add incompleteCount helper to body
+
+##### `simple-todos.js`
+
+```javascript
+Tasks = new Mongo.Collection("tasks");
+
+if (Meteor.isClient) {
+  // This code only runs on the client
+  Template.body.helpers({
+    tasks: function() {
+      if (Session.get("hideCompleted")) {
+        // If hide completed is checked, filter tasks
+        return Tasks.find({checked: {$ne: true}}, {sort: {createdAt: -1}});
+      } else {
+        // Otherwise, return all of the tasks
+        return Tasks.find({}, {sort: {createdAt: -1}});
+      }
+    },
+    hideCompleted: function () {
+      return Session.get("hideCompleted");
+    },
+    incompleteCount: function () {
+      return Tasks.find({checked: {$ne: true}}).count();
+    }
+  });
+
+  Template.body.events({
+    "submit .new-task": function (event) {
+      // Prevent default browser form submit
+      event.preventDefault();
+
+      // Get value from form element
+      var text = event.target.text.value;
+
+      // Insert a task into the collection
+      Tasks.insert({
+        text: text,
+        createdAt: new Date() // current time
+      });
+
+      // Clear form
+      event.target.text.value = "";
+    },
+    "change .hide-completed input": function (event) {
+      Session.set("hideCompleted", event.target.checked);
+    }
+  });
+
+  Template.task.events({
+    "click .toggle-checked": function () {
+      // Set the checked property to the opposite of its current value
+      Tasks.update(this._id, {
+        $set: {checked: ! this.checked}
+      });
+    },
+    "click .delete": function () {
+      Tasks.remove(this._id);
+    }
+  });
+}
+
+/*
+ * if (Meteor.isServer) {
+ *   Meteor.startup(function () {
+ *     // code to run on server at startup
+ *   });
+ * }
+ */
+```
+
+
+```sh
+diff --git a/simple-todos.js b/simple-todos.js
+index a6fedee..a9c5406 100644
+--- a/simple-todos.js
++++ b/simple-todos.js
+@@ -14,6 +14,9 @@ if (Meteor.isClient) {
+     },
+     hideCompleted: function () {
+       return Session.get("hideCompleted");
++    },
++    incompleteCount: function () {
++      return Tasks.find({checked: {$ne: true}}).count();
+     }
+   });
+```
+
+### Display incompleteCount
+
+##### `simple-todos.js`
+
+```html
+<head>
+  <title>Todo List</title>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Todo List ({{incompleteCount}})</h1>
+
+      <label class="hide-completed">
+        <input type="checkbox" checked="{{hideCompleted}}" />
+        Hide Completed Tasks
+      </label>
+
+      <form class="new-task">
+        <input type="text" name="text" placeholder="Type to add new tasks" />
+      </form>
+    </header>
+
+    <ul>
+      {{#each tasks}}
+        {{> task}}
+      {{/each}}
+    </ul>
+  </div>
+</body>
+
+<template name="task">
+  <li class="{{#if checked}}checked{{/if}}">
+    <button class="delete">&times;</button>
+
+    <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+
+    <span class="text">{{text}}</span>
+  </li>
+</template>
+```
+
+```sh
+diff --git a/simple-todos.html b/simple-todos.html
+index 7d837a9..cb9b6f1 100644
+--- a/simple-todos.html
++++ b/simple-todos.html
+@@ -5,7 +5,7 @@
+ <body>
+   <div class="container">
+     <header>
+-      <h1>Todo List</h1>
++      <h1>Todo List ({{incompleteCount}})</h1>
+ 
+       <label class="hide-completed">
+         <input type="checkbox" checked="{{hideCompleted}}" />
+```
+
+

@@ -1,4 +1,4 @@
-Meteor.js official tutorials
+MeteorJS Official Tutorials
 ============================
 
 Todo App
@@ -6,7 +6,7 @@ Todo App
 
 [Build your first Meteor app](https://www.meteor.com/tutorials/blaze/creating-an-app)
 
-http://sho-simple-todos.meteor.com/
+Hosted at http://sho-simple-todos.meteor.com/
 
 Todo App with Angular
 ---------------------

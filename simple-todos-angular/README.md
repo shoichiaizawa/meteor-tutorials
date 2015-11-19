@@ -49,13 +49,13 @@ $ meteor
 
 Open your web browser and go to `http://localhost:3000` to see the app running.
 
-### In my terminal emulator:
+### In my terminal emulator
 
 ```sh
 Shoichi at sho-mbp in ~/meteor-tutorials on master
 $ ls
 README.md             simple-todos/         simple-todos-angular/ simple-todos-react/
-c
+
 Shoichi at sho-mbp in ~/meteor-tutorials on master
 $ meteor create simple-todos-angular
 Created a new Meteor app in 'simple-todos-angular'.
@@ -176,11 +176,13 @@ To start working on our todos list app, let's replace the code of the default st
 
 #### 2.2  Add Angular app and controller to HTML
 
+##### simple-todos-angular.html
+
 ```html
 <head>
   <title>Todo List</title>
 </head>
- 
+
 <body>
 <div class="container"
      ng-app="simple-todos"
@@ -189,42 +191,47 @@ To start working on our todos list app, let's replace the code of the default st
 </body>
 ```
 
-#### 2.3  Init Angular app and controller simple-todos-angular.js »
+#### 2.3  Init Angular app and controller
+
+##### simple-todos-angular.js
 
 ```javascript
 if (Meteor.isClient) {
- 
+
   // This code only runs on the client
   angular.module('simple-todos',['angular-meteor']);
- 
+
   angular.module('simple-todos').controller('TodosListCtrl', ['$scope',
     function ($scope) {
- 
+
       $scope.tasks = [
         { text: 'This is task 1' },
         { text: 'This is task 2' },
         { text: 'This is task 3' }
       ];
- 
+
   }]);
 }
 ```
 
-#### 2.4  Add Angular list to template simple-todos-angular.html »
+#### 2.4  Add Angular list to template
+
+##### simple-todos-angular.html
 
 ```html
+[...]
 <div class="container"
      ng-app="simple-todos"
      ng-controller="TodosListCtrl">
- 
+
   <header>
     <h1>Todo List</h1>
   </header>
- 
+
   <ul>
     <li ng-repeat="task in tasks">{{task.text}}</li>
   </ul>
- 
+
 </div>
 </body>
 ```
@@ -360,7 +367,7 @@ header .hide-completed {
 }
 ```
 
-### In my terminal emulator:
+### In my terminal emulator
 
 ```sh
 Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master
@@ -398,10 +405,9 @@ templating-tools                    added, version 1.0.0
 
 
 angular: Everything you need to use AngularJS in your Meteor app
+```
 
-Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
-$ vim simple-todos-angular.html
-
+```sh
 Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
 $ git diff simple-todos-angular.html
 diff --git a/simple-todos-angular/simple-todos-angular.html b/simple-todos-angular/simple-todos-angular.html
@@ -440,10 +446,9 @@ index 30ca9b0..745ec7a 100644
 +  <!-- <button>Click Me</button> -->
 +  <!-- <p>You've pressed the button {{counter}} times.</p> -->
 +<!-- </template> -->
+```
 
-Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
-$ vim simple-todos-angular.js
-
+```sh
 Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
 $ git diff simple-todos-angular.js
 diff --git a/simple-todos-angular/simple-todos-angular.js b/simple-todos-angular/simple-todos-angular.js
@@ -501,21 +506,23 @@ $
 
 ### Instructions
 
-3.1  Replace the static array with a Collection simple-todos-angular.js »
+3.1  Replace the static array with a Collection
+
+##### simple-todos-angular.js
 
 ```javascript
 Tasks = new Mongo.Collection('tasks');
- 
+
 if (Meteor.isClient) {
- 
+
   // This code only runs on the client
   angular.module('simple-todos',['angular-meteor']);
- 
+
   angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
     function ($scope, $meteor) {
- 
+
       $scope.tasks = $meteor.collection(Tasks);
- 
+
     }]);
 }
 ```
@@ -523,9 +530,6 @@ if (Meteor.isClient) {
 ### In my terminal emulator
 
 ```sh
-Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master
-$ vim simple-todos-angular.js
-
 Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
 $ git diff simple-todos-angular.js
 diff --git a/simple-todos-angular/simple-todos-angular.js b/simple-todos-angular/simple-todos-angular.js
@@ -569,43 +573,170 @@ $
 4. Forms and events
 -------------------
 
+### Instructions
 
+#### 4.1  Add new task form to template
+
+##### simple-todos-angular.html
+
+```html
+[...]
+  <header>
+    <h1>Todo List</h1>
+
+    <!-- add a form below the h1 -->
+    <form class="new-task" ng-submit="addTask(newTask); newTask='';">
+      <input ng-model="newTask" type="text"
+             name="text" placeholder="Type to add new tasks" />
+    </form>
+
+  </header>
+
+  <ul>
+[...]
+```
+
+4.2  Create Add Task scope function simple-todos-angular.js »
+
+```javascript
+[...]
+      $scope.tasks = $meteor.collection(Tasks);
+
+      $scope.addTask = function (newTask) {
+        $scope.tasks.push( {
+          text: newTask,
+          createdAt: new Date() }
+        );
+      };
+
+    }]);
+}
+```
+
+4.3  Sort task list by date simple-todos-angular.js »
+
+```javascript
+[...]
+  angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
+    function ($scope, $meteor) {
+
+      $scope.tasks = $meteor.collection( function() {
+        return Tasks.find({}, { sort: { createdAt: -1 } })
+      });
+
+      $scope.addTask = function (newTask) {
+        $scope.tasks.push( {
+[...]
+```
+
+### In my terminal emulator
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.html
+diff --git a/simple-todos-angular/simple-todos-angular.html b/simple-todos-angular/simple-todos-angular.html
+index 913106e..0c78c28 100644
+--- a/simple-todos-angular/simple-todos-angular.html
++++ b/simple-todos-angular/simple-todos-angular.html
+@@ -9,6 +9,13 @@
+
+     <header>
+       <h1>Todo List</h1>
++
++      <!-- add a form below the h1 -->
++      <form class="new-task" ng-submit="addTask(newTask); newTask='';">
++        <input ng-model="newTask" type="text"
++               name="text" placeholder="Type to add new tasks" />
++      </form>
++
+     </header>
+
+     <ul>
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.js
+diff --git a/simple-todos-angular/simple-todos-angular.js b/simple-todos-angular/simple-todos-angular.js
+index 5dc180a..722d230 100644
+--- a/simple-todos-angular/simple-todos-angular.js
++++ b/simple-todos-angular/simple-todos-angular.js
+@@ -8,7 +8,16 @@ if (Meteor.isClient) {
+   angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
+     function ($scope, $meteor) {
+
+-      $scope.tasks = $meteor.collection(Tasks);
++      $scope.tasks = $meteor.collection( function() {
++        return Tasks.find({}, { sort: { createdAt: -1 } })
++      });
++
++      $scope.addTask = function (newTask) {
++        $scope.tasks.push( {
++          text: newTask,
++          createdAt: new Date() }
++        );
++      };
+
+   }]);
+ }
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$
+```
 
 5. Update and remove
 --------------------
 
+### Instructions
 
+### In my terminal emulator
 
 6. Deploying your app
 ---------------------
 
+### Instructions
 
+### In my terminal emulator
 
 7. Running on mobile
 --------------------
 
+### Instructions
 
+### In my terminal emulator
 
 8. Filtering Collections
 ------------------------
 
+### Instructions
 
+### In my terminal emulator
 
 9. Adding user accounts
 -----------------------
 
+### Instructions
 
+### In my terminal emulator
 
 10. Security with methods
 -------------------------
 
+### Instructions
 
+### In my terminal emulator
 
 11. Publish and subscribe
 -------------------------
 
+### Instructions
 
+### In my terminal emulator
 
 12. Next steps
 --------------
+
+### Instructions
+
+### In my terminal emulator
 

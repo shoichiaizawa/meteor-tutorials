@@ -1,16 +1,14 @@
+Tasks = new Mongo.Collection('tasks');
+
 if (Meteor.isClient) {
 
   // This code only runs on the client
   angular.module('simple-todos',['angular-meteor']);
 
-  angular.module('simple-todos').controller('TodosListCtrl', ['$scope',
-    function ($scope) {
+  angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
+    function ($scope, $meteor) {
 
-      $scope.tasks = [
-        { text: 'This is task 1' },
-        { text: 'This is task 2' },
-        { text: 'This is task 3' }
-      ];
+      $scope.tasks = $meteor.collection(Tasks);
 
   }]);
 }
@@ -18,5 +16,5 @@ if (Meteor.isClient) {
 /* if (Meteor.isServer) {
  *   Meteor.startup(function () {
  *     // code to run on server at startup
- *   }); 
+ *   });
  * } */

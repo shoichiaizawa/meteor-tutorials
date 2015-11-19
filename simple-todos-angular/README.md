@@ -416,6 +416,7 @@ index 30ca9b0..745ec7a 100644
 
  <body>
 -  <h1>Welcome to Meteor!</h1>
+
 +  <div class="container"
 +       ng-app="simple-todos"
 +       ng-controller="TodosListCtrl">
@@ -498,7 +499,72 @@ $
 3. Collections
 --------------
 
+### Instructions
 
+3.1  Replace the static array with a Collection simple-todos-angular.js »
+
+```javascript
+Tasks = new Mongo.Collection('tasks');
+ 
+if (Meteor.isClient) {
+ 
+  // This code only runs on the client
+  angular.module('simple-todos',['angular-meteor']);
+ 
+  angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
+    function ($scope, $meteor) {
+ 
+      $scope.tasks = $meteor.collection(Tasks);
+ 
+    }]);
+}
+```
+
+### In my terminal emulator
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master
+$ vim simple-todos-angular.js
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.js
+diff --git a/simple-todos-angular/simple-todos-angular.js b/simple-todos-angular/simple-todos-angular.js
+index 0f3309c..5dc180a 100644
+--- a/simple-todos-angular/simple-todos-angular.js
++++ b/simple-todos-angular/simple-todos-angular.js
+@@ -1,16 +1,14 @@
++Tasks = new Mongo.Collection('tasks');
++
+ if (Meteor.isClient) {
+
+   // This code only runs on the client
+   angular.module('simple-todos',['angular-meteor']);
+
+-  angular.module('simple-todos').controller('TodosListCtrl', ['$scope',
+-    function ($scope) {
++  angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
++    function ($scope, $meteor) {
+
+-      $scope.tasks = [
+-        { text: 'This is task 1' },
+-        { text: 'This is task 2' },
+-        { text: 'This is task 3' }
+-      ];
++      $scope.tasks = $meteor.collection(Tasks);
+
+   }]);
+ }
+@@ -18,5 +16,5 @@ if (Meteor.isClient) {
+ /* if (Meteor.isServer) {
+  *   Meteor.startup(function () {
+  *     // code to run on server at startup
+- *   });
++ *   });
+  * } */
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$
+```
 
 4. Forms and events
 -------------------

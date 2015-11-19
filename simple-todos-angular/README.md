@@ -749,10 +749,20 @@ $
 
 ### Instructions
 
+```sh
+$ meteor deploy my_app_name.meteor.com
+```
+
 ### In my terminal emulator
 
 ```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ meteor deploy sho-simple-todos-angular.meteor.com
+Deploying to sho-simple-todos-angular.meteor.com.
+Now serving at http://sho-simple-todos-angular.meteor.com
 
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$
 ```
 
 7. Running on mobile

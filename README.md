@@ -13,7 +13,9 @@ Todo App with Angular
 
 [Integrate Meteor and AngularJS](https://www.meteor.com/tutorials/angular/creating-an-app)
 
-TODO: Do this sometime
+TODO: Completed Step 6; do the rest!
+
+Hosted at http://sho-simple-todos-angular.meteor.com/
 
 Todo App with React
 -------------------

@@ -596,7 +596,9 @@ $
 [...]
 ```
 
-4.2  Create Add Task scope function simple-todos-angular.js »
+#### 4.2  Create Add Task scope function
+
+##### simple-todos-angular.js
 
 ```javascript
 [...]
@@ -613,7 +615,9 @@ $
 }
 ```
 
-4.3  Sort task list by date simple-todos-angular.js »
+#### 4.3  Sort task list by date
+
+##### simple-todos-angular.js
 
 ```javascript
 [...]
@@ -689,7 +693,56 @@ $
 
 ### Instructions
 
+#### 5.1  Add done and delete buttons to task
+
+##### simple-todos-angular.html
+
+```html
+[...]
+  </header>
+
+  <ul>
+    <li ng-repeat="task in tasks" ng-class="{'checked': task.checked}">
+      <button class="delete" ng-click="tasks.remove(task)">&times;</button>
+
+      <input type="checkbox" ng-model="task.checked" class="toggle-checked" />
+
+      <span class="text">{{task.text}}</span>
+    </li>
+  </ul>
+
+</div>
+[...]
+```
+
 ### In my terminal emulator
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.html
+diff --git a/simple-todos-angular/simple-todos-angular.html b/simple-todos-angular/simple-todos-angular.html
+index 0c78c28..54c2196 100644
+--- a/simple-todos-angular/simple-todos-angular.html
++++ b/simple-todos-angular/simple-todos-angular.html
+@@ -19,7 +19,13 @@
+     </header>
+
+     <ul>
+-      <li ng-repeat="task in tasks">{{task.text}}</li>
++      <li ng-repeat="task in tasks" ng-class="{'checked': task.checked}">
++        <button class="delete" ng-click="tasks.remove(task)">&times;</button>
++
++        <input class="toggle-checked" type="checkbox" ng-model="task.checked" />
++
++        <span class="text">{{task.text}}</span>
++      </li>
+     </ul>
+
+   </div>
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$
+```
 
 6. Deploying your app
 ---------------------
@@ -698,12 +751,20 @@ $
 
 ### In my terminal emulator
 
+```sh
+
+```
+
 7. Running on mobile
 --------------------
 
 ### Instructions
 
 ### In my terminal emulator
+
+```sh
+
+```
 
 8. Filtering Collections
 ------------------------
@@ -712,12 +773,20 @@ $
 
 ### In my terminal emulator
 
+```sh
+
+```
+
 9. Adding user accounts
 -----------------------
 
 ### Instructions
 
 ### In my terminal emulator
+
+```sh
+
+```
 
 10. Security with methods
 -------------------------
@@ -726,6 +795,10 @@ $
 
 ### In my terminal emulator
 
+```sh
+
+```
+
 11. Publish and subscribe
 -------------------------
 
@@ -733,10 +806,18 @@ $
 
 ### In my terminal emulator
 
+```sh
+
+```
+
 12. Next steps
 --------------
 
 ### Instructions
 
 ### In my terminal emulator
+
+```sh
+
+```
 

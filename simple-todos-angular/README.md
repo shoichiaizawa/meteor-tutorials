@@ -819,6 +819,47 @@ $ meteor run ios
 
 ```sh
 Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.html
+diff --git a/simple-todos-angular/simple-todos-angular.html b/simple-todos-angular/simple-todos-angular.html
+index 54c2196..335adcd 100644
+--- a/simple-todos-angular/simple-todos-angular.html
++++ b/simple-todos-angular/simple-todos-angular.html
+@@ -4,7 +4,6 @@
+
+ <body>
+   <div class="container"
+-       ng-app="simple-todos"
+        ng-controller="TodosListCtrl">
+
+     <header>
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.js
+diff --git a/simple-todos-angular/simple-todos-angular.js b/simple-todos-angular/simple-todos-angular.js
+index 722d230..61a1fa4 100644
+--- a/simple-todos-angular/simple-todos-angular.js
++++ b/simple-todos-angular/simple-todos-angular.js
+@@ -5,6 +5,15 @@ if (Meteor.isClient) {
+   // This code only runs on the client
+   angular.module('simple-todos',['angular-meteor']);
+
++  function onReady() {
++    angular.bootstrap(document, ['simple-todos']);
++  }
++
++  if (Meteor.isCordova)
++    angular.element(document).on('deviceready', onReady);
++  else
++    angular.element(document).ready(onReady);
++
+   angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
+     function ($scope, $meteor) {
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
 $ meteor install-sdk ios
 Please follow the instructions here:
 https://github.com/meteor/meteor/wiki/Mobile-Development-Install:-iOS-on-Mac
@@ -841,10 +882,170 @@ specify an alternative port with --port <port>.
 
 ### Instructions
 
+#### 8.1  Add hideComplete checkbox to template
+
+##### simple-todos-angular.html
+
+```html
+[...]
+  <header>
+    <h1>Todo List</h1>
+
+    <label class="hide-completed">
+      <input type="checkbox" ng-model="hideCompleted"/>
+      Hide Completed Tasks
+    </label>
+
+    <!-- add a form below the h1 -->
+    <form class="new-task" ng-submit="addTask(newTask); newTask='';">
+      <input ng-model="newTask" type="text"
+[...]
+```
+
+#### 8.2  Watch hideCompleted and change the query variable
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+        );
+      };
+
+      $scope.$watch('hideCompleted', function() {
+        if ($scope.hideCompleted)
+          $scope.query = {checked: {$ne: true}};
+        else
+          $scope.query = {};
+      });
+
+    }]);
+}
+```
+
+#### 8.3  Change the Collection to use query parameter
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+  angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
+    function ($scope, $meteor) {
+
+      $scope.tasks = $meteor.collection(function() {
+        return Tasks.find($scope.query, {sort: {createdAt: -1}})
+      });
+
+      $scope.addTask = function (newTask) {
+[...]
+```
+
+#### 8.4  Make query parameter reactive
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+    function ($scope, $meteor) {
+
+      $scope.tasks = $meteor.collection(function() {
+        return Tasks.find($scope.getReactively('query'), {sort: {createdAt: -1}})
+      });
+
+      $scope.addTask = function (newTask) {
+[...]
+```
+
+#### 8.5  Add incompleteCount to scope
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+          $scope.query = {};
+      });
+
+      $scope.incompleteCount = function () {
+        return Tasks.find({ checked: {$ne: true} }).count();
+      };
+
+    }]);
+}
+```
+
+#### 8.6  Add incompleteCount to header
+
+##### simple-todos-angular.html
+
+```html
+[...]
+     ng-controller="TodosListCtrl">
+
+  <header>
+    <h1>Todo List ( {{ incompleteCount() }} )</h1>
+
+    <label class="hide-completed">
+      <input type="checkbox" ng-model="hideCompleted"/>
+[...]
+```
+
 ### In my terminal emulator
 
 ```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.html
+diff --git a/simple-todos-angular/simple-todos-angular.html b/simple-todos-angular/simple-todos-angular.html
+index 335adcd..293d3ea 100644
+--- a/simple-todos-angular/simple-todos-angular.html
++++ b/simple-todos-angular/simple-todos-angular.html
+@@ -7,7 +7,12 @@
+        ng-controller="TodosListCtrl">
 
+     <header>
+-      <h1>Todo List</h1>
++      <h1>Todo List ({{ incompleteCount() }})</h1>
++
++      <label class="hide-completed" for="">
++        <input type="checkbox" ng-model="hideCompleted"/>
++        Hide Completed Tasks
++      </label>
+
+       <!-- add a form below the h1 -->
+       <form class="new-task" ng-submit="addTask(newTask); newTask='';">
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.js
+diff --git a/simple-todos-angular/simple-todos-angular.js b/simple-todos-angular/simple-todos-angular.js
+index 61a1fa4..381f23b 100644
+--- a/simple-todos-angular/simple-todos-angular.js
++++ b/simple-todos-angular/simple-todos-angular.js
+@@ -18,7 +18,7 @@ if (Meteor.isClient) {
+     function ($scope, $meteor) {
+
+       $scope.tasks = $meteor.collection( function() {
+-        return Tasks.find({}, { sort: { createdAt: -1 } })
++        return Tasks.find($scope.getReactively('query'), {sort: { createdAt: -1 }})
+       });
+
+       $scope.addTask = function (newTask) {
+@@ -28,6 +28,17 @@ if (Meteor.isClient) {
+         );
+       };
+
++      $scope.$watch('hideCompleted', function() {
++        if ($scope.hideCompleted)
++          $scope.query = {checked: {$ne: true}};
++        else
++          $scope.query = {};
++      });
++
++      $scope.incompleteCount = function () {
++        return Tasks.find({ checked: {$ne: true} }).count();
++      };
++
+   }]);
+ }
 ```
 
 9. Adding user accounts

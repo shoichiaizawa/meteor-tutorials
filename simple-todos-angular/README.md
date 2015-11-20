@@ -770,10 +770,70 @@ $
 
 ### Instructions
 
+#### 7.1  Remove ng-app
+
+##### simple-todos-angular.html
+
+```html
+[...]
+<body>
+<div class="container"
+     ng-controller="TodosListCtrl">
+
+  <header>
+[...]
+```
+
+#### 7.2  Bootstrap Angular to mobile as well
+
+##### simple-todos-angular.js
+
+```javasscript
+[...]
+  // This code only runs on the client
+  angular.module('simple-todos',['angular-meteor']);
+
+  function onReady() {
+    angular.bootstrap(document, ['simple-todos']);
+  }
+
+  if (Meteor.isCordova)
+    angular.element(document).on('deviceready', onReady);
+  else
+    angular.element(document).ready(onReady);
+
+  angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
+    function ($scope, $meteor) {
+[...]
+```
+
+#### Running on an iOS simulator (Mac Only)
+
+```sh
+$ meteor install-sdk ios
+$ meteor add-platform ios
+$ meteor run ios
+```
+
 ### In my terminal emulator
 
 ```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ meteor install-sdk ios
+Please follow the instructions here:
+https://github.com/meteor/meteor/wiki/Mobile-Development-Install:-iOS-on-Mac
 
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ meteor add-platform ios
+ios: added platform
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ meteor run ios
+Can't listen on port 3000. Perhaps another Meteor is running?
+
+Running two copies of Meteor in the same application directory
+will not work. If something else is using port 3000, you can
+specify an alternative port with --port <port>.
 ```
 
 8. Filtering Collections

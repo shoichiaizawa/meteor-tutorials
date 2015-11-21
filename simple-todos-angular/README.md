@@ -1053,10 +1053,212 @@ index 61a1fa4..381f23b 100644
 
 ### Instructions
 
+To enable the accounts system and UI, we need to add the relevant packages. In your app directory, run the following command:
+
+```sh
+meteor add accounts-password dotansimha:accounts-ui-angular
+```
+
+#### 9.2  Add `accounts.ui` dependency to Angular app
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+if (Meteor.isClient) {
+
+  // This code only runs on the client
+  angular.module('simple-todos',['angular-meteor', 'accounts.ui']);
+
+  function onReady() {
+    angular.bootstrap(document, ['simple-todos']);
+[...]
+```
+
+#### 9.3  Add loginButtons directive
+
+##### simple-todos-angular.html
+
+```html
+[...]
+      Hide Completed Tasks
+    </label>
+
+    <login-buttons></login-buttons>
+
+    <!-- add a form below the h1 -->
+    <form class="new-task" ng-submit="addTask(newTask); newTask='';">
+      <input ng-model="newTask" type="text"
+[...]
+```
+
+#### 9.4  Configure accounts UI to use usernames instead of email
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+if (Meteor.isClient) {
+
+  Accounts.ui.config({
+    passwordSignupFields: "USERNAME_ONLY"
+  });
+
+  // This code only runs on the client
+  angular.module('simple-todos',['angular-meteor', 'accounts.ui']);
+[...]
+```
+
+#### 9.5  Add owner and username to created task
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+        return Tasks.find($scope.getReactively('query'), {sort: {createdAt: -1}})
+      });
+
+      $scope.addTask = function(newTask) {
+        $scope.tasks.push( {
+            text: newTask,
+            createdAt: new Date(),             // current time
+            owner: Meteor.userId(),            // _id of logged in user
+            username: Meteor.user().username }  // username of logged in user
+        );
+      };
+[...]
+```
+
+#### 9.6  Hide new task form if user is not logged in
+
+##### simple-todos-angular.html
+
+```html
+[...]
+    <login-buttons></login-buttons>
+
+    <!-- add a form below the h1 -->
+    <form class="new-task"
+          ng-submit="addTask(newTask); newTask='';"
+          ng-show="$root.currentUser">
+      <input ng-model="newTask" type="text"
+             name="text" placeholder="Type to add new tasks" />
+    </form>
+[...]
+```
+
+#### 9.7  Add username to the displayed task
+
+##### simple-todos-angular.html
+
+```html
+[...]
+      <input type="checkbox" ng-model="task.checked" class="toggle-checked" />
+
+      <span class="text">
+        <strong>{{task.username}}</strong> - {{task.text}}
+      </span>
+    </li>
+  </ul>
+[...]
+```
+
 ### In my terminal emulator
 
 ```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ meteor add accounts-password dotansimha:accounts-ui-angular
 
+Changes to your project's package version selections:
+
+accounts-base                   added, version 1.2.2
+accounts-password               added, version 1.1.4
+accounts-ui                     added, version 1.1.6
+accounts-ui-unstyled            added, version 1.1.8
+blaze-html-templates            added, version 1.0.1
+ddp-rate-limiter                added, version 1.0.0
+dotansimha:accounts-ui-angular  added, version 0.0.2
+email                           added, version 1.0.8
+less                            added, version 2.5.1
+localstorage                    added, version 1.0.5
+npm-bcrypt                      added, version 0.7.8_2
+rate-limit                      added, version 1.0.0
+service-configuration           added, version 1.0.5
+sha                             added, version 1.0.4
+srp                             added, version 1.0.4
+templating                      added, version 1.1.5
+
+
+accounts-password: Password support for accounts
+dotansimha:accounts-ui-angular: AngularJS wrapper for Meteor's Account-UI package
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.html
+diff --git a/simple-todos-angular/simple-todos-angular.html b/simple-todos-angular/simple-todos-angular.html
+index 293d3ea..d977e22 100644
+--- a/simple-todos-angular/simple-todos-angular.html
++++ b/simple-todos-angular/simple-todos-angular.html
+@@ -14,8 +14,12 @@
+         Hide Completed Tasks
+       </label>
+
++      <login-buttons></login-buttons>
++
+       <!-- add a form below the h1 -->
+-      <form class="new-task" ng-submit="addTask(newTask); newTask='';">
++      <form class="new-task"
++            ng-submit="addTask(newTask); newTask='';"
++            ng-show="$root.currentUser">
+         <input ng-model="newTask" type="text"
+                name="text" placeholder="Type to add new tasks" />
+       </form>
+@@ -28,7 +32,9 @@
+
+         <input class="toggle-checked" type="checkbox" ng-model="task.checked" />
+
+-        <span class="text">{{task.text}}</span>
++        <span class="text">
++          <strong>{{task.username}}</strong> - {{task.text}}
++        </span>
+       </li>
+     </ul>
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.js
+diff --git a/simple-todos-angular/simple-todos-angular.js b/simple-todos-angular/simple-todos-angular.js
+index 381f23b..0c8567b 100644
+--- a/simple-todos-angular/simple-todos-angular.js
++++ b/simple-todos-angular/simple-todos-angular.js
+@@ -2,8 +2,12 @@ Tasks = new Mongo.Collection('tasks');
+
+ if (Meteor.isClient) {
+
++  Accounts.ui.config({
++    passwordSignupFields: "USERNAME_ONLY"
++  });
++
+   // This code only runs on the client
+-  angular.module('simple-todos',['angular-meteor']);
++  angular.module('simple-todos',['angular-meteor', 'accounts.ui']);
+
+   function onReady() {
+     angular.bootstrap(document, ['simple-todos']);
+@@ -23,8 +27,10 @@ if (Meteor.isClient) {
+
+       $scope.addTask = function (newTask) {
+         $scope.tasks.push( {
+-          text: newTask,
+-          createdAt: new Date() }
++            text: newTask,
++            createdAt: new Date(),              // current time
++            owner: Meteor.userId(),             // _id of logged in user
++            username: Meteor.user().username }  // username of logged in user
+         );
+       };
 ```
 
 10. Security with methods

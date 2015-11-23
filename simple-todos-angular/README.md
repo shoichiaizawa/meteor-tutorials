@@ -1,8 +1,7 @@
 Todo App with AngularJS
 =======================
 
-Creating your first angular-meteor app:
-https://www.meteor.com/tutorials/angular/creating-an-app
+[Creating your first angular-meteor app](https://www.meteor.com/tutorials/angular/creating-an-app)
 
 Table of Contents
 -----------------
@@ -788,7 +787,7 @@ $
 
 ##### simple-todos-angular.js
 
-```javasscript
+```javascript
 [...]
   // This code only runs on the client
   angular.module('simple-todos',['angular-meteor']);
@@ -1265,6 +1264,82 @@ index 381f23b..0c8567b 100644
 -------------------------
 
 ### Instructions
+
+```sh
+$ meteor remove insecure
+```
+
+#### 10.2  Add Meteor Methods for add, delete and check tasks
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+    }]);
+}
+
+Meteor.methods({
+  addTask: function (text) {
+    // Make sure the user is logged in before inserting a task
+    if (! Meteor.userId()) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    Tasks.insert({
+      text: text,
+      createdAt: new Date(),
+      owner: Meteor.userId(),
+      username: Meteor.user().username
+    });
+  },
+  deleteTask: function (taskId) {
+    Tasks.remove(taskId);
+  },
+  setChecked: function (taskId, setChecked) {
+    Tasks.update(taskId, { $set: { checked: setChecked} });
+  }
+});
+
+#### 10.3  Add scope functions to call the Meteor methods
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+        return Tasks.find($scope.getReactively('query'), {sort: {createdAt: -1}})
+      });
+
+      $scope.addTask = function (newTask) {
+        $meteor.call('addTask', newTask);
+      };
+
+      $scope.deleteTask = function (task) {
+        $meteor.call('deleteTask', task._id);
+      };
+
+      $scope.setChecked = function (task) {
+        $meteor.call('setChecked', task._id, !task.checked);
+      };
+
+      $scope.$watch('hideCompleted', function() {
+[...]
+```
+
+10.4  Change template events to call methods simple-todos-angular.html »
+
+```html
+[...]
+  <ul>
+    <li ng-repeat="task in tasks" ng-class="{'checked': task.checked}">
+      <button class="delete" ng-click="deleteTask(task)">&times;</button>
+
+      <input type="checkbox" ng-checked="task.checked"
+             ng-click="setChecked(task)" class="toggle-checked" />
+
+      <span class="text">
+        <strong>{{task.username}}</strong> - {{task.text}}
+[...]
+```
 
 ### In my terminal emulator
 

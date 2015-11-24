@@ -1344,7 +1344,96 @@ Meteor.methods({
 ### In my terminal emulator
 
 ```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master
+$ meteor remove insecure
 
+Changes to your project's package version selections:
+
+insecure  removed from your project
+
+insecure: removed dependency
+```
+
+```html
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff
+diff --git a/simple-todos-angular/simple-todos-angular.html b/simple-todos-angular/simple-todos-angular.html
+index d977e22..8587aef 100644
+--- a/simple-todos-angular/simple-todos-angular.html
++++ b/simple-todos-angular/simple-todos-angular.html
+@@ -28,9 +28,9 @@
+
+     <ul>
+       <li ng-repeat="task in tasks" ng-class="{'checked': task.checked}">
+-        <button class="delete" ng-click="tasks.remove(task)">&times;</button>
++        <button class="delete" ng-click="deleteTask(task)">&times;</button>
+
+-        <input class="toggle-checked" type="checkbox" ng-model="task.checked" />
++        <input type="checkbox" ng-checked="task.checked" ng-click="setChecked(task)" class="toggle-checked" />
+
+         <span class="text">
+           <strong>{{task.username}}</strong> - {{task.text}}
+```
+
+```javascript
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff
+diff --git a/simple-todos-angular/simple-todos-angular.js b/simple-todos-angular/simple-todos-angular.js
+index 0c8567b..6008780 100644
+--- a/simple-todos-angular/simple-todos-angular.js
++++ b/simple-todos-angular/simple-todos-angular.js
+@@ -26,12 +26,15 @@ if (Meteor.isClient) {
+       });
+
+       $scope.addTask = function (newTask) {
+-        $scope.tasks.push( {
+-            text: newTask,
+-            createdAt: new Date(),              // current time
+-            owner: Meteor.userId(),             // _id of logged in user
+-            username: Meteor.user().username }  // username of logged in user
+-        );
++        $meteor.call('addTask', newTask);
++      };
++
++      $scope.deleteTask = function (task) {
++        $meteor.call('deleteTask', task._id);
++      };
++
++      $scope.setChecked = function (task) {
++        $meteor.call('setChecked', task._id, !task.checked);
+       };
+
+       $scope.$watch('hideCompleted', function() {
+@@ -48,6 +51,28 @@ if (Meteor.isClient) {
+   }]);
+ }
+
++Meteor.methods({
++  addTask: function (text) {
++    // Make sure the user is logged in before inserting a task
++    if (! Meteor.userId()) {
++      throw new Meteor.Error('not-authorized');
++    }
++
++    Tasks.insert({
++      text: text,
++      createdAt: new Date(),              // current time
++      owner: Meteor.userId(),             // _id of logged in user
++      username: Meteor.user().username    // username of logged in user
++    });
++  },
++  deleteTask: function (taskId) {
++    Tasks.remove(taskId);
++  },
++  setChecked: function (taskId, setChecked) {
++    Tasks.update(taskId, { $set: { checked: setChecked} });
++  }
++});
++
+ /* if (Meteor.isServer) {
+  *   Meteor.startup(function () {
+  *     // code to run on server at startup
+lines 175-199/199 (END)
 ```
 
 11. Publish and subscribe
@@ -1352,10 +1441,296 @@ Meteor.methods({
 
 ### Instructions
 
+#### 11.2  Add server publish function to tasks
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+    Tasks.update(taskId, { $set: { checked: setChecked} });
+  }
+});
+
+if (Meteor.isServer) {
+  Meteor.publish('tasks', function () {
+    return Tasks.find();
+  });
+}
+```
+
+#### 11.3  Subscribe to tasks publication
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+  angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
+    function ($scope, $meteor) {
+
+      $scope.$meteorSubscribe('tasks');
+
+      $scope.tasks = $meteor.collection(function() {
+        return Tasks.find($scope.getReactively('query'), {sort: {createdAt: -1}})
+      });
+[...]
+```
+
+#### 11.4  Add setPrivate button to template
+
+##### simple-todos-angular.html
+
+```html
+[...]
+      <input type="checkbox" ng-checked="task.checked"
+             ng-click="setChecked(task)" class="toggle-checked" />
+
+      <button class="toggle-private"
+              ng-if="task.owner === $root.currentUser._id"
+              ng-click="setPrivate(task)">
+        {{task.private == true ? "Private" : "Public"}}
+      </button>
+
+      <span class="text">
+        <strong>{{task.username}}</strong> - {{task.text}}
+      </span>
+[...]
+```
+
+#### 11.5  Add private CSS class to task
+
+##### simple-todos-angular.html
+
+```html
+[...]
+  </header>
+
+  <ul>
+    <li ng-repeat="task in tasks"
+        ng-class="{'checked': task.checked, 'private': task.private}">
+      <button class="delete" ng-click="deleteTask(task)">&times;</button>
+
+      <input type="checkbox" ng-checked="task.checked"
+[...]
+```
+
+We need to modify our JavaScript code in two places:
+
+#### 11.6  Add setPrivate Meteor Method
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+  },
+  setChecked: function (taskId, setChecked) {
+    Tasks.update(taskId, { $set: { checked: setChecked} });
+  },
+  setPrivate: function (taskId, setToPrivate) {
+    var task = Tasks.findOne(taskId);
+
+    // Make sure only the task owner can make a task private
+    if (task.owner !== Meteor.userId()) {
+      throw new Meteor.Error('not-authorized');
+    }
+
+    Tasks.update(taskId, { $set: { private: setToPrivate } });
+  }
+});
+[...]
+```
+
+#### 11.7  Add setPrivate scope function
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+        $meteor.call('setChecked', task._id, !task.checked);
+      };
+
+      $scope.setPrivate = function (task) {
+        $meteor.call('setPrivate', task._id, ! task.private);
+      };
+
+      $scope.$watch('hideCompleted', function() {
+        if ($scope.hideCompleted)
+          $scope.query = {checked: {$ne: true}};
+[...]
+```
+
+Selectively publishing tasks based on privacy status
+
+Now that we have a way of setting which tasks are private, we should modify our publication function to only send the tasks that a user is authorized to see:
+
+#### 11.8  Publish only public and owner's tasks
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+if (Meteor.isServer) {
+  Meteor.publish('tasks', function () {
+    return Tasks.find({
+      $or: [
+        { private: {$ne: true} },
+        { owner: this.userId }
+      ]
+    });
+  });
+}
+```
+
+Extra method security
+
+In order to finish up our private task feature, we need to add checks to our deleteTask and setChecked methods to make sure only the task owner can delete or check off a private task:
+
+#### 11.9  Add extra security to methods
+
+##### simple-todos-angular.js
+
+```javascript
+[...]
+    });
+  },
+  deleteTask: function (taskId) {
+    var task = Tasks.findOne(taskId);
+    if (task.private && task.owner !== Meteor.userId()) {
+      // If the task is private, make sure only the owner can delete it
+      throw new Meteor.Error('not-authorized');
+    }
+
+    Tasks.remove(taskId);
+  },
+  setChecked: function (taskId, setChecked) {
+    var task = Tasks.findOne(taskId);
+    if (task.private && task.owner !== Meteor.userId()) {
+      // If the task is private, make sure only the owner can check it off
+      throw new Meteor.Error('not-authorized');
+    }
+
+    Tasks.update(taskId, { $set: { checked: setChecked} });
+  },
+  setPrivate: function (taskId, setToPrivate) {
+[...]
+```
+
 ### In my terminal emulator
 
 ```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master
+$ meteor remove autopublish
 
+Changes to your project's package version selections:
+
+autopublish  removed from your project
+
+autopublish: removed dependency
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.html
+diffm--git a/simple-todos-angular/simple-todos-angular.html b/simple-todos-angular/simple-todos-angular.html
+index 8587aef..ea4ee76 100644
+--- a/simple-todos-angular/simple-todos-angular.html
++++ b/simple-todos-angular/simple-todos-angular.html
+@@ -27,11 +27,18 @@
+     </header>
+
+     <ul>
+-      <li ng-repeat="task in tasks" ng-class="{'checked': task.checked}">
++      <li ng-repeat="task in tasks"
++          ng-class="{'checked': task.checked, 'private': task.private}">
+         <button class="delete" ng-click="deleteTask(task)">&times;</button>
+
+         <input type="checkbox" ng-checked="task.checked" ng-click="setChecked(task)" class="toggle-checked" />
+
++        <button class="toggle-private"
++                ng-if="task.owner === $root.currentUser._id"
++                ng-click="setPrivate(task)">
++          {{task.private == true ? "Private" : "Public"}}
++        </button>
++
+         <span class="text">
+           <strong>{{task.username}}</strong> - {{task.text}}
+         </span>
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master [!]
+$ git diff simple-todos-angular.js
+diff --git a/simple-todos-angular/simple-todos-angular.js b/simple-todos-angular/simple-todos-angular.js
+index 6008780..033f2dd 100644
+--- a/simple-todos-angular/simple-todos-angular.js
++++ b/simple-todos-angular/simple-todos-angular.js
+@@ -21,6 +21,8 @@ if (Meteor.isClient) {
+   angular.module('simple-todos').controller('TodosListCtrl', ['$scope', '$meteor',
+     function ($scope, $meteor) {
+
++      $scope.$meteorSubscribe('tasks');
++
+       $scope.tasks = $meteor.collection( function() {
+         return Tasks.find($scope.getReactively('query'), {sort: { createdAt: -1 }})
+       });
+@@ -37,6 +39,10 @@ if (Meteor.isClient) {
+         $meteor.call('setChecked', task._id, !task.checked);
+       };
+
++      $scope.setPrivate = function (task) {
++        $meteor.call('setPrivate', task._id, ! task.private);
++      };
++
+       $scope.$watch('hideCompleted', function() {
+         if ($scope.hideCompleted)
+           $scope.query = {checked: {$ne: true}};
+@@ -66,15 +72,42 @@ Meteor.methods({
+     });
+   },
+   deleteTask: function (taskId) {
++    var task = Tasks.findOne(taskId);
++    if (task.private && task.owner !== Meteor.userId()) {
++      // If the task is private, make sure only the owner can delete it
++      throw new Meteor.Error('not-authorized');
++    }
++
+     Tasks.remove(taskId);
+   },
+   setChecked: function (taskId, setChecked) {
++    var task = Tasks.findOne(taskId);
++    if (task.private && task.owner !== Meteor.userId()) {
++      // If the task is private, make sure only the owner can check it off
++      throw new Meteor.Error('not-authorized');
++    }
++
+     Tasks.update(taskId, { $set: { checked: setChecked} });
++  },
++  setPrivate: function (taskId, setToPrivate) {
++    var task = Tasks.findOne(taskId);
++
++    // Make sure only the task owner can make a task private
++    if (task.owner !== Meteor.userId()) {
++      throw new Meteor.Error('not-authorized');
++    }
++
++    Tasks.update(taskId, { $set: { private: setToPrivate } });
+   }
+ });
+
+-/* if (Meteor.isServer) {
+- *   Meteor.startup(function () {
+- *     // code to run on server at startup
+- *   });
+- * } */
++if (Meteor.isServer) {
++  Meteor.publish('tasks', function () {
++    return Tasks.find({
++      $or: [
++        { private: {$ne: true} },
++        { owner: this.userId }
++      ]
++    });
++  });
++}
 ```
 
 12. Next steps

@@ -1738,9 +1738,25 @@ index 6008780..033f2dd 100644
 
 ### Instructions
 
+Redeploy the app again by:
+
+```sh
+$ meteor deploy your-meteor-app.meteor.com
+```
+
+Here are some options for where you can go next:
+
+1. Read about [the design of the Meteor platform](https://www.meteor.com/projects) to see how all of the parts fit together
+2. Check out the [complete documentation](http://docs.meteor.com/#/basic/)
+3. Continue to the [advanced tutorial](http://www.angular-meteor.com/)
+4. Explore this set of [tools](https://www.meteor.com/tools) and [resources](https://www.meteor.com/tools/resources) to help you build Meteor apps
+
 ### In my terminal emulator
 
 ```sh
-
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-angular on master
+$ meteor deploy sho-simple-todos-angular.meteor.com
+Deploying to sho-simple-todos-angular.meteor.com.
+Now serving at http://sho-simple-todos-angular.meteor.com
 ```
 

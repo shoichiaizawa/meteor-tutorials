@@ -146,7 +146,386 @@ if (Meteor.isServer) {
 
 ### Instructions
 
+Open a new terminal in the same directory as your running app, and type:
+
+```sh
+$ meteor add react
+```
+
+#### Replace the starter code
+
+To get started, let's replace the code of the default starter app. Then we'll talk about what it does.
+
+First, replace the content of the initial HTML file:
+
+#### 2.2  Replace starter HTML code
+
+##### `simple-todos-react.html`
+
+```html
+<head>
+  <title>Todo List</title>
+</head>
+
+<body>
+  <div id="render-target"></div>
+</body>
+```
+
+Second, delete simple-todos-react.js and create three new files:
+
+#### 2.3  Replace starter JS
+
+##### `simple-todos-react.jsx`
+
+```javascript
+if (Meteor.isClient) {
+  // This code is executed on the client only
+
+  Meteor.startup(function () {
+    // Use Meteor.startup to render the component after the page is ready
+    React.render(<App />, document.getElementById("render-target"));
+  });
+}
+```
+
+#### 2.4  Create App component
+
+##### `App.jsx`
+
+```javascript
+// App component - represents the whole app
+App = React.createClass({
+  getTasks() {
+    return [
+      { _id: 1, text: "This is task 1" },
+      { _id: 2, text: "This is task 2" },
+      { _id: 3, text: "This is task 3" }
+    ];
+  },
+
+  renderTasks() {
+    return this.getTasks().map((task) => {
+      return <Task key={task._id} task={task} />;
+    });
+  },
+
+  render() {
+    return (
+      <div className="container">
+        <header>
+          <h1>Todo List</h1>
+        </header>
+
+        <ul>
+          {this.renderTasks()}
+        </ul>
+      </div>
+    );
+  }
+});
+```
+
+#### 2.5  Create Task component
+
+##### `Task.jsx`
+
+```javascript
+// Task component - represents a single todo item
+Task = React.createClass({
+  propTypes: {
+    // This component gets the task to display through a React prop.
+    // We can use propTypes to indicate it is required
+    task: React.PropTypes.object.isRequired
+  },
+  render() {
+    return (
+      <li>{this.props.task.text}</li>
+    );
+  }
+});
+```
+
+#### Add the given CSS template
+
+```css
+/* CSS declarations go here */
+body {
+  font-family: sans-serif;
+  background-color: #315481;
+  background-image: linear-gradient(to bottom, #315481, #918e82 100%);
+  background-attachment: fixed;
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  padding: 0;
+  margin: 0;
+
+  font-size: 14px;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100%;
+  background: white;
+}
+
+header {
+  background: #d2edf4;
+  background-image: linear-gradient(to bottom, #d0edf5, #e1e5f0 100%);
+  padding: 20px 15px 15px 15px;
+  position: relative;
+}
+
+#login-buttons {
+  display: block;
+}
+
+h1 {
+  font-size: 1.5em;
+  margin: 0;
+  margin-bottom: 10px;
+  display: inline-block;
+  margin-right: 1em;
+}
+
+form {
+  margin-top: 10px;
+  margin-bottom: -10px;
+  position: relative;
+}
+
+.new-task input {
+  box-sizing: border-box;
+  padding: 10px 0;
+  background: transparent;
+  border: none;
+  width: 100%;
+  padding-right: 80px;
+  font-size: 1em;
+}
+
+.new-task input:focus{
+  outline: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  background: white;
+}
+
+.delete {
+  float: right;
+  font-weight: bold;
+  background: none;
+  font-size: 1em;
+  border: none;
+  position: relative;
+}
+
+li {
+  position: relative;
+  list-style: none;
+  padding: 15px;
+  border-bottom: #eee solid 1px;
+}
+
+li .text {
+  margin-left: 10px;
+}
+
+li.checked {
+  color: #888;
+}
+
+li.checked .text {
+  text-decoration: line-through;
+}
+
+li.private {
+  background: #eee;
+  border-color: #ddd;
+}
+
+header .hide-completed {
+  float: right;
+}
+
+.toggle-private {
+  margin-left: 5px;
+}
+
+@media (max-width: 600px) {
+  li {
+    padding: 12px 15px;
+  }
+
+  .search {
+    width: 150px;
+    clear: both;
+  }
+
+  .new-task input {
+    padding-bottom: 5px;
+  }
+}
+```
+
 ### In my terminal emulator
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master
+$ meteor add react
+
+Changes to your project's package version
+selections:
+
+coffeescript        added, version 1.0.11
+cosmos:browserify   added, version 0.8.4
+jsx                 added, version 0.2.3
+react               added, version 0.14.1_1
+react-meteor-data   added, version 0.2.3
+react-runtime       added, version 0.14.1_1
+react-runtime-dev   added, version 0.14.1
+react-runtime-prod  added, version 0.14.1
+
+
+react: Everything you need to use React
+with Meteor.
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [+!?]
+$ git diff simple-todos-react.html
+diff --git a/simple-todos-react/simple-todos-react.html b/simple-todos-react/simple-todos-react.html
+index e296a58..1aae2d4 100644
+--- a/simple-todos-react/simple-todos-react.html
++++ b/simple-todos-react/simple-todos-react.html
+@@ -1,14 +1,7 @@
+ <head>
+-  <title>simple-todos-react</title>
++  <title>Todo List</title>
+ </head>
+
+ <body>
+-  <h1>Welcome to Meteor!</h1>
+-
+-  {{> hello}}
++  <div id="render-target"></div>
+ </body>
+-
+-<template name="hello">
+-  <button>Click Me</button>
+-  <p>You've pressed the button {{counter}} times.</p>
+-</template>
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [+!?]
+$ git diff simple-todos-react.jsx
+diff --git a/simple-todos-react/simple-todos-react.jsx b/simple-todos-react/simple-todos-react.jsx
+index 4f8c65d..a7e2d2f 100644
+--- a/simple-todos-react/simple-todos-react.jsx
++++ b/simple-todos-react/simple-todos-react.jsx
+@@ -1,23 +1,8 @@
+ if (Meteor.isClient) {
+-  // counter starts at 0
+-  Session.setDefault('counter', 0);
++  // This code is executed on the client only
+
+-  Template.hello.helpers({
+-    counter: function () {
+-      return Session.get('counter');
+-    }
+-  });
+-
+-  Template.hello.events({
+-    'click button': function () {
+-      // increment the counter when button is clicked
+-      Session.set('counter', Session.get('counter') + 1);
+-    }
+-  });
+-}
+-
+-if (Meteor.isServer) {
+   Meteor.startup(function () {
+-    // code to run on server at startup
++    // Use Meteor.startup to render the component after the page is ready
++    React.render(<App />, document.getElementById("render-target"));
+   });
+ }
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [+]
+$ git diff --staged App.jsx
+diff --git a/simple-todos-react/App.jsx b/simple-todos-react/App.jsx
+new file mode 100644
+index 0000000..0d85460
+--- /dev/null
++++ b/simple-todos-react/App.jsx
+@@ -0,0 +1,30 @@
++// App component - represents the whole app
++App = React.createClass({
++  getTasks() {
++    return [
++      { _id: 1, text: "This is task 1" },
++      { _id: 2, text: "This is task 3" },
++      { _id: 3, text: "This is task 3" }
++    ];
++  },
++
++  renderTasks() {
++    return this.getTasks().map((task) => {
++      return <Task key={task._id} task={task} />
++    });
++  },
++
++  render() {
++    return (
++      <div className="container">
++        <header>
++          <h1>Todo List</h1>
++        </header>
++
++        <ul>
++          {this.renderTasks()}
++        </ul>
++      </div>
++    );
++  }
++});
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [+]
+$ git diff --staged Task.jsx
+diff --git a/simple-todos-react/Task.jsx b/simple-todos-react/Task.jsx
+new file mode 100644
+index 0000000..c49e7ac
+--- /dev/null
++++ b/simple-todos-react/Task.jsx
+@@ -0,0 +1,13 @@
++// Task component - represents a single todo item
++Task = React.createClass({
++  propTypes: {
++    // This component gets the task to display through a React prop.
++    // We can use propTypes to indicate it is required
++    task: React.PropTypes.object.isRequired
++  },
++  render() {
++    return (
++      <li>{this.props.task.text}</li>
++    );
++  }
++});
+```
 
 3. Collections
 --------------

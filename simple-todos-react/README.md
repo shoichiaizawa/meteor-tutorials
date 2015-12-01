@@ -774,7 +774,106 @@ index 6f6ab86..8e85145 100644
 
 ### Instructions
 
+Let's add two new elements to our `task` component, a checkbox and a delete button, with event handlers for both:
+
+#### 5.1  Update Task component to add features
+
+##### `Task.jsx`
+
+```javascript
+// Task component - represents a single todo item
+Task = React.createClass({
+  propTypes: {
+    task: React.PropTypes.object.isRequired
+  },
+
+  toggleChecked() {
+    // Set the checked property to the opposite of its current value
+    Tasks.update(this.props.task._id, {
+      $set: {checked: ! this.props.task.checked}
+    });
+  },
+
+  deleteThisTask() {
+    Tasks.remove(this.props.task._id);
+  },
+
+  render() {
+    // Give tasks a different className when they are checked off,
+    // so that we can style them nicely in CSS
+    const taskClassName = this.props.task.checked ? "checked" : "";
+
+    return (
+      <li className={taskClassName}>
+        <button className="delete" onClick={this.deleteThisTask}>
+          &times;
+        </button>
+
+        <input
+          type="checkbox"
+          readOnly={true}
+          checked={this.props.task.checked}
+          onClick={this.toggleChecked} />
+
+        <span className="text">{this.props.task.text}</span>
+      </li>
+    );
+  }
+});
+```
+
 ### In my terminal emulator
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ git diff Task.jsx
+diff --git a/simple-todos-react/Task.jsx b/simple-todos-react/Task.jsx
+index c49e7ac..da01338 100644
+--- a/simple-todos-react/Task.jsx
++++ b/simple-todos-react/Task.jsx
+@@ -5,9 +5,37 @@ Task = React.createClass({
+     // We can use propTypes to indicate it is required
+     task: React.PropTypes.object.isRequired
+   },
++
++  toggleChecked() {
++    // Set the checked property to the opposite of its current value
++    Tasks.update(this.props.task._id, {
++      $set: {checked: ! this.props.task.checked}
++    });
++  },
++
++  deleteThisTask() {
++    Tasks.remove(this.props.task._id);
++  },
++
+   render() {
++    // Give tasks a different className when they are check off,
++    // so that we can style them nicely in CSS
++    const taskClassName = this.props.task.checked ? "checked" : "";
++
+     return (
+-      <li>{this.props.task.text}</li>
++      <li className={taskClassName}>
++        <button className="delete" onClick={this.deleteThisTask}>
++          &times;
++        </button>
++
++        <input
++          type="checkbox"
++          readOnly={true}
++          checked={this.props.task.checked}
++          onClick={this.toggleChecked} />
++
++        <span className="text">{this.props.task.text}</span>
++      </li>
+     );
+   }
+ });
+```
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$
 
 6. Deploying your app
 ---------------------

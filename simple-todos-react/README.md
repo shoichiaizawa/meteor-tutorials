@@ -532,6 +532,52 @@ index 0000000..c49e7ac
 
 ### Instructions
 
+Let's add a line of code to define our first collection:
+
+#### 3.1  Define tasks collection
+
+##### `simple-todos-react.jsx`
+
+```javascript
+// Define a collection to hold our tasks
+Tasks = new Mongo.Collection("tasks");
+
+if (Meteor.isClient) {
+  // This code is executed on the client only
+```
+
+#### Using data from a collection inside a React component
+
+To use data from a Meteor collection inside a React component, include the `ReactMeteorData` mixin in a component. With this mixin in your component, you can define a method called `getMeteorData` which knows how to keep track of changes in data. The object you return from `getMeteorData` can be accessed on `this.data` inside the `render` method. Let's do this now:
+
+#### 3.2  Modify App component to get tasks from collection
+
+##### App.jsx
+
+```javascript
+// App component - represents the whole app
+App = React.createClass({
+
+  // This mixin makes the getMeteorData method work
+  mixins: [ReactMeteorData],
+
+  // Loads items from the Tasks collection and puts them on this.data.tasks
+  getMeteorData() {
+    return {
+      tasks: Tasks.find({}).fetch()
+    }
+  },
+
+  renderTasks() {
+    // Get tasks from this.data.tasks
+    return this.data.tasks.map((task) => {
+      return <Task key={task._id} task={task} />;
+    });
+  },
+```
+
+When you make these changes to the code, you'll notice that the tasks that used to be in the todo list have disappeared. That's because our database is currently empty — we need to insert some tasks!
+
 ### In my terminal emulator
 
 4. Forms and events

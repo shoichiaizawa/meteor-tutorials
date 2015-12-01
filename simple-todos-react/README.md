@@ -872,15 +872,29 @@ index c49e7ac..da01338 100644
  });
 ```
 
-Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
-$
-
 6. Deploying your app
 ---------------------
 
 ### Instructions
 
+Now that we have a working todo list app, we can share it with our friends! Meteor makes it really easy to put an app up on the internet where other people can use it.
+
+$ Simply go to your app directory, and type:
+
+```sh
+meteor deploy my_app_name.meteor.com
+```
+
+Once you answer all of the prompts and the upload completes, you can go to `http://my_app_name.meteor.com` and use your app from anywhere.
+
 ### In my terminal emulator
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ meteor deploy sho-simple-todos-react.meteor.com
+Deploying to sho-simple-todos-react.meteor.com.
+Now serving at http://sho-simple-todos-react.meteor.com
+```
 
 7. Running on mobile
 --------------------

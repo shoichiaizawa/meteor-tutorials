@@ -22,10 +22,10 @@ Hosted at: [http://sho-simple-todos-angular.meteor.com/](http://sho-simple-todos
 Todo App with React
 -------------------
 
-TODO: Do this sometime
+TODO: Continue from Step 7: Running on mobile
 
 Tutorial: [Integrate Meteor and React](https://www.meteor.com/tutorials/react/creating-an-app)
 
 Project directory: [https://github.com/shoichiaizawa/meteor-tutorials/tree/master/simple-todos-react](https://github.com/shoichiaizawa/meteor-tutorials/tree/master/simple-todos-react)
 
-Hosted at: [url](#)
+Hosted at: [http://sho-simple-todos-react.meteor.com/](http://sho-simple-todos-react.meteor.com/)

@@ -544,6 +544,7 @@ Tasks = new Mongo.Collection("tasks");
 
 if (Meteor.isClient) {
   // This code is executed on the client only
+[...]
 ```
 
 #### Using data from a collection inside a React component
@@ -552,7 +553,7 @@ To use data from a Meteor collection inside a React component, include the `Reac
 
 #### 3.2  Modify App component to get tasks from collection
 
-##### App.jsx
+##### `App.jsx`
 
 ```javascript
 // App component - represents the whole app
@@ -574,18 +575,199 @@ App = React.createClass({
       return <Task key={task._id} task={task} />;
     });
   },
+[...]
 ```
 
 When you make these changes to the code, you'll notice that the tasks that used to be in the todo list have disappeared. That's because our database is currently empty — we need to insert some tasks!
 
 ### In my terminal emulator
 
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ meteor diff simple-todos-react.jsx
+diff --git a/simple-todos-react/simple-todos-react.jsx b/simple-todos-react/simple-todos-react.jsx
+index a7e2d2f..a67b030 100644
+--- a/simple-todos-react/simple-todos-react.jsx
++++ b/simple-todos-react/simple-todos-react.jsx
+@@ -1,3 +1,6 @@
++// Define a collection to hold our tasks
++Tasks = new Mongo.Collection("tasks");
++
+ if (Meteor.isClient) {
+   // This code is executed on the client only
+```
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ meteor diff App.jsx
+diff --git a/simple-todos-react/App.jsx b/simple-todos-react/App.jsx
+index 0d85460..6f6ab86 100644
+--- a/simple-todos-react/App.jsx
++++ b/simple-todos-react/App.jsx
+@@ -1,15 +1,19 @@
+ // App component - represents the whole app
+ App = React.createClass({
+-  getTasks() {
+-    return [
+-      { _id: 1, text: "This is task 1" },
+-      { _id: 2, text: "This is task 3" },
+-      { _id: 3, text: "This is task 3" }
+-    ];
++
++  // This mixin makes the getMeteorData method wor
++  mixins: [ReactMeteorData],
++
++  // Loads items from the Tasks collection and puts them on this.data.tasks
++  getMeteorData() {
++    return {
++      tasks: Tasks.find({}).fetch()
++    }
+   },
+
+   renderTasks() {
+-    return this.getTasks().map((task) => {
++    // Get tasks from this.data.tasks
++    return this.data.tasks.map((task) => {
+       return <Task key={task._id} task={task} />
+     });
+   },
+```
+
 4. Forms and events
 -------------------
 
 ### Instructions
 
+First, let's add a form to our `App` component:
+
+#### 4.1  Add form for new tasks
+
+##### `App.jsx`
+
+```javascript
+[...]
+      <div className="container">
+        <header>
+          <h1>Todo List</h1>
+
+          <form className="new-task" onSubmit={this.handleSubmit} >
+            <input
+              type="text"
+              ref="textInput"
+              placeholder="Type to add new tasks" />
+          </form>
+        </header>
+
+        <ul>
+[...]
+```
+
+Let's add a `handleSubmit` method to our `App` component:
+
+#### 4.2  Add handleSubmit method to App component
+
+##### `App.jsx`
+
+```javascript
+[...]
+    });
+  },
+
+  handleSubmit(event) {
+    event.preventDefault();
+
+    // Find the text field via the React ref
+    var text = React.findDOMNode(this.refs.textInput).value.trim();
+
+    Tasks.insert({
+      text: text,
+      createdAt: new Date() // current time
+    });
+
+    // Clear form
+    React.findDOMNode(this.refs.textInput).value = "";
+  },
+
+  render() {
+    return (
+      <div className="container">
+[...]
+```
+
+#### Sorting our tasks
+
+Currently, our code displays all new tasks at the bottom of the list. That's not very good for a task list, because we want to see the newest tasks first.
+
+We can solve this by sorting the results using the `createdAt` field that is automatically added by our new code. Just add a sort option to the `find` call inside `getMeteorData` on the `App` component:
+
+#### 4.3  Update getMeteorData to sort tasks by time
+
+##### `App.jsx`
+
+```javascript
+[...]
+  // Loads items from the Tasks collection and puts them on this.data.tasks
+  getMeteorData() {
+    return {
+      tasks: Tasks.find({}, {sort: {createdAt: -1}}).fetch()
+    }
+  },
+[...]
+```
+
 ### In my terminal emulator
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ git diff App.jsx
+diff --git a/simple-todos-react/App.jsx b/simple-todos-react/App.jsx
+index 6f6ab86..8e85145 100644
+--- a/simple-todos-react/App.jsx
++++ b/simple-todos-react/App.jsx
+@@ -7,7 +7,7 @@ App = React.createClass({
+   // Loads items from the Tasks collection and puts them on this.data.tasks
+   getMeteorData() {
+     return {
+-      tasks: Tasks.find({}).fetch()
++      tasks: Tasks.find({}, {sort: {createdAt: -1}}).fetch()
+     }
+   },
+
+@@ -18,11 +18,33 @@ App = React.createClass({
+     });
+   },
+
++  handleSubmit(event) {
++    event.preventDefault();
++
++    // Find the text field via the React ref
++    var text = React.findDOMNode(this.refs.textInput).value.trim();
++
++    Tasks.insert({
++      text: text,
++      createdAt: new Date() // current time
++    });
++
++    // Clear form
++    React.findDOMNode(this.refs.textInput).value = "";
++  },
++
+   render() {
+     return (
+       <div className="container">
+         <header>
+           <h1>Todo List</h1>
++
++          <form className="new-task" onSubmit={this.handleSubmit} >
++            <input
++              type="text"
++              ref="textInput"
++              placeholder="Type to add new tasks" />
++          </form>
+         </header>
+
+         <ul>
+```
 
 5. Update and remove
 --------------------

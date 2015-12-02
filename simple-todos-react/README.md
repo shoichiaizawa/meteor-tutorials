@@ -901,7 +901,81 @@ Now serving at http://sho-simple-todos-react.meteor.com
 
 ### Instructions
 
+#### Running on an iOS simulator (Mac Only)
+
+If you have a Mac, you can run your app inside the iOS simulator.
+
+Go to your app folder and type:
+
+```sh
+$ meteor install-sdk ios
+```
+
+This will run you through the setup necessary to build an iOS app from your project. When you're done, type:
+
+```sh
+$ meteor add-platform ios
+$ meteor run ios
+```
+
+You will see the iOS simulator pop up with your app running inside.
+
+#### Running on an Android emulator
+
+In the terminal, go to your app folder and type:
+
+```sh
+$ meteor install-sdk android
+```
+
+This will help you install all of the necessary tools to build an Android app from your project. When you are done installing everything, type:
+
+```sh
+meteor add-platform android
+```
+
+After you agree to the license terms, type:
+
+```sh
+meteor run android
+```
+
+After some initialization, you will see an Android emulator pop up, running your app inside a native Android wrapper. The emulator can be somewhat slow, so if you want to see what it's really like using your app, you should run it on an actual device.
+
 ### In my terminal emulator
+
+#### Running on an iOS simulator (Mac Only)
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master
+$ meteor install-sdk ios
+Please follow the instructions here:
+https://github.com/meteor/meteor/wiki/Mobile-Development-Install:-iOS-on-Mac
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ meteor add-platform ios
+ios: added platform
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ meteor run ios
+Can't listen on port 3000. Perhaps another Meteor is running?
+
+Running two copies of Meteor in the same application directory
+will not work. If something else is using port 3000, you can
+specify an alternative port with --port <port>.
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ meteor run ios
+[[[[[ ~/meteor-tutorials/simple-todos-react ]]]]]
+
+=> Started proxy.
+=> Started MongoDB.
+=> Started your app.
+
+=> App running at: http://localhost:3000/
+=> Started app on iOS Simulator.
+^C
+```
 
 8. Temporary UI state
 ---------------------

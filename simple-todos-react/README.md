@@ -942,6 +942,14 @@ meteor run android
 
 After some initialization, you will see an Android emulator pop up, running your app inside a native Android wrapper. The emulator can be somewhat slow, so if you want to see what it's really like using your app, you should run it on an actual device.
 
+#### Running on an Android device
+
+TBA
+
+#### Running on an iPhone or iPad (Mac Only; requires Apple developer account)
+
+TBA
+
 ### In my terminal emulator
 
 #### Running on an iOS simulator (Mac Only)
@@ -976,6 +984,66 @@ $ meteor run ios
 => Started app on iOS Simulator.
 ^C
 ```
+
+#### Running on an Android emulator
+
+```sh
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ meteor install-sdk android
+Please follow the instructions here:
+
+https://github.com/meteor/meteor/wiki/Mobile-Development-Install:-Android-on-Mac
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ meteor add-platform android
+android: added platform
+
+Shoichi at sho-mbp in ~/meteor-tutorials/simple-todos-react on master [!]
+$ meteor run android
+[[[[[ ~/meteor-tutorials/simple-todos-react ]]]]]
+
+=> Started proxy.
+=> Started MongoDB.
+=> Started your app.
+
+=> App running at: http://localhost:3000/
+=> Errors executing Cordova commands:
+
+   While running Cordova app for platform Android with options --emulator:
+   Error: Command failed:
+   /Users/Shoichi/meteor-tutorials/simple-todos-react/.meteor/local/cordova-build/platforms/android/cordova/run
+   --emulator
+
+   /Users/Shoichi/meteor-tutorials/simple-todos-react/.meteor/local/cordova-build/platforms/android/cordova/node_modules/q/q.js:126
+   throw e;
+   ^
+   ERROR : No emulator images (avds) found.
+   1. Download desired System Image by running:
+   /usr/local/Cellar/android-sdk/24.4.1_1/bin/android sdk
+   2. Create an AVD by running:
+   /usr/local/Cellar/android-sdk/24.4.1_1/bin/android avd
+   HINT: For a faster emulator, use an Intel System Image and install the
+   HAXM device driver
+   at ChildProcess.exitCallback (/tools/utils/processes.js:137:23)
+   at ChildProcess.emit (events.js:98:17)
+   at Process.ChildProcess._handle.onexit (child_process.js:820:12)
+
+ExitWithCode:1
+```
+
+###### Notes
+
+##### References:
+
+<b>For iOS</b>
+
+- [Mobile Development Install: iOS on Mac](https://github.com/meteor/meteor/wiki/Mobile-Development-Install:-iOS-on-Mac)
+
+<b>For Android</b>
+
+- [Mobile Development Install: Android on Mac](https://github.com/meteor/meteor/wiki/Mobile-Development-Install:-Android-on-Mac)
+- [Installing Android Studio on Mac OS X Yosemite](https://hrnn.github.io/2015/02/11/installing-android-studio-on-mac-os-x-yosemite/)
+- [OS X に Android Studio をインストールする](http://momijiame.tumblr.com/post/109583268386/os-x-%E3%81%AB-android-studio-%E3%82%92%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB%E3%81%99%E3%82%8B)
 
 8. Temporary UI state
 ---------------------
